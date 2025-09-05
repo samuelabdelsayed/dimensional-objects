@@ -1,0 +1,20 @@
+{
+  "name": "dimensional-objects",
+  "version": "1.0.0",
+  "description": "A visualizer for geometric objects across different dimensions",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "dimensional",
+    "objects",
+    "visualization",
+    "three.js",
+    "webgl",
+    "4d"
+  ],
+  "author": "Samuel Abdelsayed",
+  "license": "MIT"
+}
