@@ -14,8 +14,8 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-    // Redirect root to src/dimensions.html
-    let filePath = req.url === '/' ? '/src/dimensions.html' : req.url;
+    // Redirect root to index.html
+    let filePath = req.url === '/' ? '/index.html' : req.url;
     
     // Get the absolute path to the file
     filePath = path.join(__dirname, filePath);
