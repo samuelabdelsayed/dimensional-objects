@@ -1,4 +1,3 @@
-````markdown
 # Dimensional Objects Visualizer
 
 A web application that generates high-quality, rotating graphics of geometric objects across different dimensions. This application allows users to visualize how objects like cubes, spheres, pyramids, and even human figures are represented across 1D, 2D, 3D, and 4D spaces.
