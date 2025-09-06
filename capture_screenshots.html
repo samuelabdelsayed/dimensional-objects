@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dimensional Objects Screenshot Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .instructions {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        .steps {
+            margin-bottom: 30px;
+        }
+        .step {
+            margin-bottom: 15px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 5px;
+            margin: 10px 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dimensional Objects Screenshot Tool</h1>
+    
+    <div class="instructions">
+        <h2>Instructions for capturing dimensional object images</h2>
+        <p>This tool helps you capture screenshots of dimensional objects for the README. Follow these steps to create images for each dimensional representation of a cube:</p>
+    </div>
+    
+    <div class="steps">
+        <h3>Steps to capture images:</h3>
+        
+        <div class="step">
+            <strong>1. Open the main application</strong>
+            <p>First, ensure the main application is running on <a href="http://localhost:3001" target="_blank">http://localhost:3001</a></p>
+            <a href="http://localhost:3001" target="_blank" class="button">Open Main Application</a>
+        </div>
+        
+        <div class="step">
+            <strong>2. Set up each dimension for screenshot</strong>
+            <p>For each dimension:</p>
+            <ul>
+                <li>Select "cube" from the dropdown menu</li>
+                <li>Set the color to something visually appealing (e.g., blue or purple)</li>
+                <li>Position your browser to frame just the specific dimension's display</li>
+                <li>Take a screenshot (Command+Shift+4 on Mac, or use your preferred screenshot tool)</li>
+                <li>Save the screenshot as "1d_cube.png", "2d_cube.png", "3d_cube.png", or "4d_cube.png"</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <strong>3. Save screenshots to the images directory</strong>
+            <p>Save all screenshots to the "images" directory in the project root</p>
+        </div>
+        
+        <div class="step">
+            <strong>4. Verify images in README</strong>
+            <p>After capturing all images, restart the server and check the README to ensure images appear correctly</p>
+        </div>
+    </div>
+    
+    <div class="example-dimensions">
+        <h3>What each dimension should showcase:</h3>
+        <ul>
+            <li><strong>1D Cube</strong>: A horizontal line segment</li>
+            <li><strong>2D Cube</strong>: A square</li>
+            <li><strong>3D Cube</strong>: A standard 3D cube with visible faces</li>
+            <li><strong>4D Cube</strong>: A tesseract (cube within cube with connecting lines)</li>
+        </ul>
+    </div>
+</body>
+</html>

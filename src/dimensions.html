@@ -162,7 +162,6 @@
                 <option value="cylinder">Cylinder</option>
                 <option value="human">Human</option>
             </select>
-            <button id="create-object-btn">Create Object</button>
         </div>
         <div class="color-selector">
             <label for="object-color">Color:</label>
@@ -241,25 +240,10 @@
             
             // DOM elements
             const objectSelect = document.getElementById('object-select');
-            const createObjectBtn = document.getElementById('create-object-btn');
             const colorSelector = document.getElementById('object-color');
             const messageContainer = document.getElementById('message-container');
             
-            // Event listeners
-            createObjectBtn.addEventListener('click', () => {
-                const objectType = objectSelect.value;
-                
-                if (!objectType) {
-                    showMessage('Please select an object.', 'error');
-                    return;
-                }
-                
-                showMessage(`Created ${objectType} successfully.`, 'success');
-                app.selectedObjectType = objectType;
-                updateAllObjects();
-            });
-            
-            // Also update when dropdown changes
+            // Event listener for dropdown changes
             objectSelect.addEventListener('change', () => {
                 const objectType = objectSelect.value;
                 app.selectedObjectType = objectType;
@@ -267,16 +251,14 @@
                 // Show user feedback
                 showMessage(`Selected ${objectType}. Creating visualization...`, 'success');
                 
-                // Force a rerender with a slight delay for better visual feedback
-                setTimeout(() => {
-                    updateAllObjects();
-                    
-                    // Reset camera positions to ensure visibility
-                    app.cameras['3d'].position.set(0, 0, 5);
-                    app.cameras['3d'].lookAt(0, 0, 0);
-                    app.cameras['4d'].position.set(0, 0, 5);
-                    app.cameras['4d'].lookAt(0, 0, 0);
-                }, 50);
+                // Immediately update all objects
+                updateAllObjects();
+                
+                // Reset camera positions to ensure visibility
+                app.cameras['3d'].position.set(0, 0, 5);
+                app.cameras['3d'].lookAt(0, 0, 0);
+                app.cameras['4d'].position.set(0, 0, 5);
+                app.cameras['4d'].lookAt(0, 0, 0);
             });
             
             // Function to show messages
@@ -433,92 +415,16 @@
                 let vertices;
                 
                 if (app.selectedObjectType === 'human') {
-                    // For a human, create a distinctive 1D representation that clearly
-                    // shows the human silhouette with anatomical proportions
+                    // For a human, create a straight line representation that matches
+                    // the height of the 3D human model (approximately 2 units tall)
                     vertices = new Float32Array([
-                        // Start with baseline (feet level)
-                        -1.0, 0, 0,
-                        -0.9, 0, 0,
-                        
-                        // Right foot
-                        -0.9, 0, 0,
-                        -0.85, 0.02, 0,
-                        
-                        // Right leg up
-                        -0.85, 0.02, 0,
-                        -0.8, 0.15, 0,
-                        
-                        // Hip level
-                        -0.8, 0.15, 0,
-                        -0.7, 0.15, 0,
-                        
-                        // Left leg down
-                        -0.7, 0.15, 0,
-                        -0.65, 0.02, 0,
-                        
-                        // Left foot
-                        -0.65, 0.02, 0,
-                        -0.6, 0, 0,
-                        
-                        // Rise for torso
-                        -0.75, 0.15, 0,
-                        -0.75, 0.4, 0,
-                        
-                        // Right arm out
-                        -0.75, 0.35, 0,
-                        -0.9, 0.3, 0,
-                        
-                        // Left arm out
-                        -0.75, 0.35, 0,
-                        -0.6, 0.3, 0,
-                        
-                        // Neck
-                        -0.75, 0.4, 0,
-                        -0.75, 0.45, 0,
-                        
-                        // Head with distinct shape
-                        -0.75, 0.45, 0,
-                        -0.85, 0.5, 0,
-                        
-                        -0.85, 0.5, 0,
-                        -0.85, 0.6, 0,
-                        
-                        -0.85, 0.6, 0,
-                        -0.75, 0.65, 0,
-                        
-                        -0.75, 0.65, 0,
-                        -0.65, 0.6, 0,
-                        
-                        -0.65, 0.6, 0,
-                        -0.65, 0.5, 0,
-                        
-                        -0.65, 0.5, 0,
-                        -0.75, 0.45, 0,
-                        
-                        // Plateau for shoulders
-                        -0.4, 0.15, 0,
-                        -0.1, 0.15, 0,
-                        
-                        // Slope down for torso
-                        -0.1, 0.15, 0,
-                        0, -0.05, 0,
-                        
-                        // Legs
-                        0, -0.05, 0,
-                        0.3, -0.05, 0,
-                        
-                        // Feet
-                        0.3, -0.05, 0,
-                        0.4, -0.15, 0,
-                        
-                        // Flat end
-                        0.4, -0.15, 0,
-                        1.0, -0.15, 0
+                        -1.0, 0, 0,   // Start of the line
+                        1.0, 0, 0     // End of the line - matching the scaled height of 3D human
                     ]);
                     
                     const material = new THREE.LineBasicMaterial({ 
                         color: app.selectedColor,
-                        linewidth: 3
+                        linewidth: 5  // Thicker line for better visibility
                     });
                     
                     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
@@ -1106,32 +1012,51 @@
                         return;
                         
                     case 'human':
-                        // Enhanced stick figure for human in 2D with more anatomical detail
-                        geometry = new THREE.BufferGeometry();
+                        // SIMPLIFIED: Create a very basic, guaranteed-visible stick figure
+                        // Create a filled shape instead of line segments for better visibility
+                        const humanMaterial = new THREE.MeshBasicMaterial({
+                            color: app.selectedColor,
+                            side: THREE.DoubleSide
+                        });
                         
-                        // Create a detailed human figure
-                        const humanVertices = [];
+                        const stickFigureGroup = new THREE.Group();
                         
-                        // Head with proper face features
-                        const headRadius = 0.18;
-                        const headSegments = 24; // More segments for smoother circle
-                        const headY = 0.7;
+                        // Head (circle)
+                        const headGeometry = new THREE.CircleGeometry(0.4, 32);
+                        const head = new THREE.Mesh(headGeometry, humanMaterial);
+                        head.position.y = 1.1;
+                        stickFigureGroup.add(head);
                         
-                        // Draw the head outline
-                        for (let i = 0; i < headSegments; i++) {
-                            const angle = (i / headSegments) * Math.PI * 2;
-                            const nextAngle = ((i + 1) / headSegments) * Math.PI * 2;
-                            
-                            humanVertices.push(
-                                Math.cos(angle) * headRadius,
-                                headY + Math.sin(angle) * headRadius,
-                                0,
-                                
-                                Math.cos(nextAngle) * headRadius,
-                                headY + Math.sin(nextAngle) * headRadius,
-                                0
-                            );
-                        }
+                        // Body (rectangle)
+                        const bodyGeometry = new THREE.PlaneGeometry(0.3, 1.0);
+                        const body = new THREE.Mesh(bodyGeometry, humanMaterial);
+                        body.position.y = 0.3;
+                        stickFigureGroup.add(body);
+                        
+                        // Arms (rectangle)
+                        const armsGeometry = new THREE.PlaneGeometry(1.0, 0.2);
+                        const arms = new THREE.Mesh(armsGeometry, humanMaterial);
+                        arms.position.y = 0.6;
+                        stickFigureGroup.add(arms);
+                        
+                        // Left leg (rectangle)
+                        const leftLegGeometry = new THREE.PlaneGeometry(0.2, 0.8);
+                        const leftLeg = new THREE.Mesh(leftLegGeometry, humanMaterial);
+                        leftLeg.position.set(-0.15, -0.6, 0);
+                        stickFigureGroup.add(leftLeg);
+                        
+                        // Right leg (rectangle)
+                        const rightLegGeometry = new THREE.PlaneGeometry(0.2, 0.8);
+                        const rightLeg = new THREE.Mesh(rightLegGeometry, humanMaterial);
+                        rightLeg.position.set(0.15, -0.6, 0);
+                        stickFigureGroup.add(rightLeg);
+                        
+                        app.scenes['2d'].add(stickFigureGroup);
+                        app.objects['2d'] = stickFigureGroup;
+                        
+                        // Log to console
+                        console.log("Simplified 2D human created");
+                        return; // Exit early
                         
                         // Face features (simplified)
                         // Eyes
@@ -1997,33 +1922,22 @@
                         return; // Exit early
                         
                     case 'human':
-                        // Create a group to hold all parts of the human figure
+                        // SIMPLIFIED: Create a basic visible human figure using primitive shapes
                         const humanFigure3D = new THREE.Group();
                         
-                        // Create different materials for various body parts
-                        const skinMaterial = new THREE.MeshPhongMaterial({ 
-                            color: 0xf5d0b0, // Natural skin tone
-                            shininess: 30,
-                            flatShading: false
-                        });
-                        
-                        const clothingMaterial = new THREE.MeshPhongMaterial({ 
+                        // Use a single bright material for maximum visibility
+                        const basicHumanMaterial = new THREE.MeshPhongMaterial({ 
                             color: app.selectedColor,
-                            shininess: 20,
-                            flatShading: false
+                            shininess: 100,
+                            flatShading: true, // Use flat shading for better definition
+                            side: THREE.DoubleSide // Render both sides
                         });
                         
-                        const hairMaterial = new THREE.MeshPhongMaterial({ 
-                            color: 0x3d2314, // Dark brown
-                            shininess: 15,
-                            flatShading: false
-                        });
-                        
-                        const shoeMaterial = new THREE.MeshPhongMaterial({ 
-                            color: 0x202020, // Dark gray/black
-                            shininess: 40,
-                            flatShading: false
-                        });
+                        // Fallback materials (kept for compatibility)
+                        const skinMaterial = basicHumanMaterial;
+                        const clothingMaterial = basicHumanMaterial;
+                        const hairMaterial = basicHumanMaterial;
+                        const shoeMaterial = basicHumanMaterial;
                         
                         // Head with better features
                         const headGroup = new THREE.Group();
@@ -2290,10 +2204,58 @@
                         rightFoot.position.set(0.125, -0.9, 0.08);
                         humanFigure3D.add(rightFoot);
                         
-                        // Scale to fit the scene
-                        humanFigure3D.scale.set(1.2, 1.2, 1.2);
+                        // COMPLETELY SIMPLIFIED HUMAN FIGURE - Create a visible stick figure
+                        // Clear everything and start with a super simple representation
                         
-                        // Position the figure to be fully visible in camera view
+                        // Remove all previous parts of the human figure
+                        while (humanFigure3D.children.length > 0) {
+                            humanFigure3D.remove(humanFigure3D.children[0]);
+                        }
+                        
+                        // Create a simple sphere for head
+                        const simpleHead = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.5, 16, 16),
+                            basicHumanMaterial
+                        );
+                        simpleHead.position.y = 1.5;
+                        humanFigure3D.add(simpleHead);
+                        
+                        // Create a cylinder for body
+                        const simpleBody = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.3, 0.3, 1.5, 16),
+                            basicHumanMaterial
+                        );
+                        simpleBody.position.y = 0.2;
+                        humanFigure3D.add(simpleBody);
+                        
+                        // Create arms (horizontal cylinder)
+                        const simpleArms = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.15, 0.15, 2, 16),
+                            basicHumanMaterial
+                        );
+                        simpleArms.position.y = 0.7;
+                        simpleArms.rotation.z = Math.PI/2; // Rotate to horizontal
+                        humanFigure3D.add(simpleArms);
+                        
+                        // Create legs (two cylinders)
+                        const leftLeg = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.15, 0.15, 1.8, 16),
+                            basicHumanMaterial
+                        );
+                        leftLeg.position.set(-0.3, -1, 0);
+                        humanFigure3D.add(leftLeg);
+                        
+                        const rightLeg = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.15, 0.15, 1.8, 16),
+                            basicHumanMaterial
+                        );
+                        rightLeg.position.set(0.3, -1, 0);
+                        humanFigure3D.add(rightLeg);
+                        
+                        // Scale to fit the scene - make it larger for guaranteed visibility
+                        humanFigure3D.scale.set(1.0, 1.0, 1.0);
+                        
+                        // Position the figure centrally
                         humanFigure3D.position.set(0, 0, 0);
                         
                         // Clear any previous objects from the scene
@@ -2305,9 +2267,20 @@
                         app.scenes['3d'].add(humanFigure3D);
                         app.objects['3d'] = humanFigure3D;
                         
-                        // Adjust camera to ensure visibility
+                        // Reset camera to default position
                         app.cameras['3d'].position.set(0, 0, 5);
                         app.cameras['3d'].lookAt(0, 0, 0);
+                        
+                        // Add very bright lighting
+                        const humanAmbientLight = new THREE.AmbientLight(0xffffff, 1.0);
+                        app.scenes['3d'].add(humanAmbientLight);
+                        
+                        const humanLight = new THREE.PointLight(0xffffff, 2, 20);
+                        humanLight.position.set(2, 1, 3);
+                        app.scenes['3d'].add(humanLight);
+                        
+                        // Log to console
+                        console.log("Simplified 3D human created");
                         
                         return; // Exit early
                         
@@ -2445,6 +2418,40 @@
                 // Add to scene
                 app.scenes['4d'].add(object4D);
                 app.objects['4d'] = object4D;
+                
+                // Adjust lighting and camera for human representation
+                if (app.selectedObjectType === 'human') {
+                    // First, remove any existing lights from previous selections
+                    app.scenes['4d'].children.forEach(child => {
+                        if (child.type === 'PointLight' || child.type === 'DirectionalLight') {
+                            app.scenes['4d'].remove(child);
+                        }
+                    });
+                    
+                    // Add very bright ambient light for basic visibility
+                    const ambientLight4D = new THREE.AmbientLight(0xffffff, 1.0);
+                    app.scenes['4d'].add(ambientLight4D);
+                    
+                    // Add multiple point lights from different directions
+                    const humanLight4D1 = new THREE.PointLight(0xffffff, 2.0, 20);
+                    humanLight4D1.position.set(2, 1, 3);
+                    app.scenes['4d'].add(humanLight4D1);
+                    
+                    const humanLight4D2 = new THREE.PointLight(0xffffff, 2.0, 20);
+                    humanLight4D2.position.set(-2, 1, -1);
+                    app.scenes['4d'].add(humanLight4D2);
+                    
+                    const humanLight4D3 = new THREE.PointLight(0xffffff, 1.5, 15);
+                    humanLight4D3.position.set(0, 3, 0);
+                    app.scenes['4d'].add(humanLight4D3);
+                    
+                    // Adjust camera position to get a better view of the 4D human
+                    app.cameras['4d'].position.set(0, 0, 8);
+                    app.cameras['4d'].lookAt(0, 0, 0);
+                    
+                    // Log confirmation that human 4D setup is complete
+                    console.log('4D Human setup complete with enhanced lighting');
+                }
             }
             
             // Create a tesseract (4D cube) representation
@@ -2974,660 +2981,454 @@
                 return hypericosahedronGroup;
             }
             
-            // Create an advanced 4D human representation
+            // Create a simple yet visually appealing 4D human representation
             function createHyperhuman() {
+                console.log("Creating 4D human representation");
                 const hyperhumanGroup = new THREE.Group();
                 
-                // Create material variants for different dimensions
-                // Primary materials for the 3D projection (inner figure)
-                const innerSkinMaterial = new THREE.MeshPhongMaterial({ 
-                    color: 0xf5d0b0,  // Natural skin tone
-                    shininess: 30,
-                    opacity: 0.95,
-                    transparent: true
-                });
-                
-                const innerClothingMaterial = new THREE.MeshPhongMaterial({ 
+                // Main material for the human
+                const humanMaterial = new THREE.MeshPhongMaterial({ 
                     color: app.selectedColor,
-                    shininess: 20,
-                    opacity: 0.9,
-                    transparent: true
+                    shininess: 80,
+                    side: THREE.DoubleSide
                 });
                 
-                const innerHairMaterial = new THREE.MeshPhongMaterial({ 
-                    color: 0x3d2314,  // Dark brown
-                    shininess: 15,
-                    opacity: 0.9,
-                    transparent: true
-                });
-                
-                // 4D projection materials (outer figure - wireframe and translucent)
-                const outerSkinMaterial = new THREE.MeshPhongMaterial({ 
-                    color: 0xf5d0b0,
-                    shininess: 50,
-                    opacity: 0.4,
+                // Tesseract material (partially transparent)
+                const hyperTesseractMaterial = new THREE.MeshPhongMaterial({
+                    color: 0x3366ff,
+                    shininess: 90,
                     transparent: true,
+                    opacity: 0.3,
                     wireframe: true
                 });
                 
-                const outerClothingMaterial = new THREE.MeshPhongMaterial({ 
-                    color: app.selectedColor,
-                    shininess: 40,
-                    opacity: 0.5,
-                    transparent: true,
-                    wireframe: true
-                });
-                
-                const outerHairMaterial = new THREE.MeshPhongMaterial({ 
-                    color: 0x3d2314,
-                    shininess: 30,
-                    opacity: 0.4,
-                    transparent: true,
-                    wireframe: true
-                });
-                
-                // Connection and time projection materials
-                const dimensionLineMaterial = new THREE.LineBasicMaterial({ 
-                    color: 0xffffff,  // White lines for contrast
-                    linewidth: 1.5,
-                    opacity: 0.7,
-                    transparent: true
-                });
-                
-                const timeLineMaterial = new THREE.LineBasicMaterial({ 
-                    color: 0x00ffff,  // Cyan for time dimension
-                    linewidth: 1,
-                    opacity: 0.6,
-                    transparent: true
-                });
-                
-                // Create inner human figure (3D projection)
-                const innerHumanGroup = new THREE.Group();
-                
-                // Head group with facial features
-                const innerHeadGroup = new THREE.Group();
-                
-                // Head base
-                const innerHeadGeometry = new THREE.SphereGeometry(0.16, 32, 32);
-                const innerHead = new THREE.Mesh(innerHeadGeometry, innerSkinMaterial);
-                innerHeadGroup.add(innerHead);
-                
-                // Hair
-                const innerHairGeometry = new THREE.SphereGeometry(0.17, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
-                const innerHair = new THREE.Mesh(innerHairGeometry, innerHairMaterial);
-                innerHair.position.y = 0.04;
-                innerHeadGroup.add(innerHair);
-                
-                // Eyes
-                const innerEyeGeometry = new THREE.SphereGeometry(0.025, 16, 16);
-                const innerEyeMaterial = new THREE.MeshPhongMaterial({ color: 0x223355, shininess: 90 });
-                
-                // Left eye
-                const innerLeftEye = new THREE.Mesh(innerEyeGeometry, innerEyeMaterial);
-                innerLeftEye.position.set(-0.07, 0.02, 0.13);
-                innerLeftEye.scale.set(1, 0.6, 0.5);
-                innerHeadGroup.add(innerLeftEye);
-                
-                // Right eye
-                const innerRightEye = new THREE.Mesh(innerEyeGeometry, innerEyeMaterial);
-                innerRightEye.position.set(0.07, 0.02, 0.13);
-                innerRightEye.scale.set(1, 0.6, 0.5);
-                innerHeadGroup.add(innerRightEye);
-                
-                // Mouth
-                const innerMouthGeometry = new THREE.TorusGeometry(0.04, 0.012, 8, 10, Math.PI);
-                const innerMouthMaterial = new THREE.MeshPhongMaterial({ color: 0xaa3333 });
-                const innerMouth = new THREE.Mesh(innerMouthGeometry, innerMouthMaterial);
-                innerMouth.rotation.x = -Math.PI / 2;
-                innerMouth.rotation.z = Math.PI;
-                innerMouth.position.set(0, -0.06, 0.13);
-                innerHeadGroup.add(innerMouth);
-                
-                // Position the head group
-                innerHeadGroup.position.y = 0.5;
-                innerHumanGroup.add(innerHeadGroup);
-                
-                // Neck
-                const innerNeckGeometry = new THREE.CylinderGeometry(0.05, 0.06, 0.1, 16);
-                const innerNeck = new THREE.Mesh(innerNeckGeometry, innerSkinMaterial);
-                innerNeck.position.y = 0.37;
-                innerHumanGroup.add(innerNeck);
-                
-                // Torso (upper body)
-                const innerTorsoGeometry = new THREE.CylinderGeometry(0.15, 0.12, 0.35, 20);
-                const innerTorso = new THREE.Mesh(innerTorsoGeometry, innerClothingMaterial);
-                innerTorso.position.y = 0.15;
-                innerHumanGroup.add(innerTorso);
-                
-                // Arms with joints
-                // Shoulders 
-                const innerShoulderGeometry = new THREE.SphereGeometry(0.06, 16, 16);
-                
-                // Left shoulder
-                const innerLeftShoulder = new THREE.Mesh(innerShoulderGeometry, innerClothingMaterial);
-                innerLeftShoulder.position.set(-0.15, 0.3, 0);
-                innerHumanGroup.add(innerLeftShoulder);
-                
-                // Right shoulder
-                const innerRightShoulder = new THREE.Mesh(innerShoulderGeometry, innerClothingMaterial);
-                innerRightShoulder.position.set(0.15, 0.3, 0);
-                innerHumanGroup.add(innerRightShoulder);
-                
-                // Upper arms
-                const innerUpperArmGeometry = new THREE.CylinderGeometry(0.04, 0.038, 0.18, 16);
-                
-                // Left upper arm
-                const innerLeftUpperArm = new THREE.Mesh(innerUpperArmGeometry, innerClothingMaterial);
-                innerLeftUpperArm.position.set(-0.23, 0.22, 0);
-                innerLeftUpperArm.rotation.z = Math.PI / 4;
-                innerHumanGroup.add(innerLeftUpperArm);
-                
-                // Right upper arm
-                const innerRightUpperArm = new THREE.Mesh(innerUpperArmGeometry, innerClothingMaterial);
-                innerRightUpperArm.position.set(0.23, 0.22, 0);
-                innerRightUpperArm.rotation.z = -Math.PI / 4;
-                innerHumanGroup.add(innerRightUpperArm);
-                
-                // Elbows
-                const innerElbowGeometry = new THREE.SphereGeometry(0.04, 12, 12);
-                
-                // Left elbow
-                const innerLeftElbow = new THREE.Mesh(innerElbowGeometry, innerSkinMaterial);
-                innerLeftElbow.position.set(-0.33, 0.14, 0);
-                innerHumanGroup.add(innerLeftElbow);
-                
-                // Right elbow
-                const innerRightElbow = new THREE.Mesh(innerElbowGeometry, innerSkinMaterial);
-                innerRightElbow.position.set(0.33, 0.14, 0);
-                innerHumanGroup.add(innerRightElbow);
-                
-                // Lower arms
-                const innerLowerArmGeometry = new THREE.CylinderGeometry(0.038, 0.033, 0.2, 16);
-                
-                // Left lower arm
-                const innerLeftLowerArm = new THREE.Mesh(innerLowerArmGeometry, innerSkinMaterial);
-                innerLeftLowerArm.position.set(-0.43, 0.06, 0);
-                innerLeftLowerArm.rotation.z = Math.PI / 5;
-                innerHumanGroup.add(innerLeftLowerArm);
-                
-                // Right lower arm
-                const innerRightLowerArm = new THREE.Mesh(innerLowerArmGeometry, innerSkinMaterial);
-                innerRightLowerArm.position.set(0.43, 0.06, 0);
-                innerRightLowerArm.rotation.z = -Math.PI / 5;
-                innerHumanGroup.add(innerRightLowerArm);
-                
-                // Hands
-                const innerHandGeometry = new THREE.SphereGeometry(0.045, 16, 16);
-                innerHandGeometry.scale(1.1, 0.7, 0.6);
-                
-                // Left hand
-                const innerLeftHand = new THREE.Mesh(innerHandGeometry, innerSkinMaterial);
-                innerLeftHand.position.set(-0.53, 0, 0);
-                innerLeftHand.rotation.z = Math.PI / 8;
-                innerHumanGroup.add(innerLeftHand);
-                
-                // Right hand
-                const innerRightHand = new THREE.Mesh(innerHandGeometry, innerSkinMaterial);
-                innerRightHand.position.set(0.53, 0, 0);
-                innerRightHand.rotation.z = -Math.PI / 8;
-                innerHumanGroup.add(innerRightHand);
-                
-                // Lower body and legs
-                // Hip/pelvis section
-                const innerHipGeometry = new THREE.CylinderGeometry(0.12, 0.13, 0.12, 20);
-                const innerHip = new THREE.Mesh(innerHipGeometry, innerClothingMaterial);
-                innerHip.position.y = -0.1;
-                innerHumanGroup.add(innerHip);
-                
-                // Upper legs
-                const innerUpperLegGeometry = new THREE.CylinderGeometry(0.06, 0.055, 0.25, 16);
-                
-                // Left upper leg
-                const innerLeftUpperLeg = new THREE.Mesh(innerUpperLegGeometry, innerClothingMaterial);
-                innerLeftUpperLeg.position.set(-0.07, -0.27, 0);
-                innerLeftUpperLeg.rotation.z = Math.PI / 60;
-                innerHumanGroup.add(innerLeftUpperLeg);
-                
-                // Right upper leg
-                const innerRightUpperLeg = new THREE.Mesh(innerUpperLegGeometry, innerClothingMaterial);
-                innerRightUpperLeg.position.set(0.07, -0.27, 0);
-                innerRightUpperLeg.rotation.z = -Math.PI / 60;
-                innerHumanGroup.add(innerRightUpperLeg);
-                
-                // Knees
-                const innerKneeGeometry = new THREE.SphereGeometry(0.05, 16, 16);
-                
-                // Left knee
-                const innerLeftKnee = new THREE.Mesh(innerKneeGeometry, innerClothingMaterial);
-                innerLeftKnee.position.set(-0.08, -0.42, 0.01);
-                innerHumanGroup.add(innerLeftKnee);
-                
-                // Right knee
-                const innerRightKnee = new THREE.Mesh(innerKneeGeometry, innerClothingMaterial);
-                innerRightKnee.position.set(0.08, -0.42, 0.01);
-                innerHumanGroup.add(innerRightKnee);
-                
-                // Lower legs
-                const innerLowerLegGeometry = new THREE.CylinderGeometry(0.054, 0.048, 0.28, 16);
-                
-                // Left lower leg
-                const innerLeftLowerLeg = new THREE.Mesh(innerLowerLegGeometry, innerClothingMaterial);
-                innerLeftLowerLeg.position.set(-0.09, -0.58, 0);
-                innerHumanGroup.add(innerLeftLowerLeg);
-                
-                // Right lower leg
-                const innerRightLowerLeg = new THREE.Mesh(innerLowerLegGeometry, innerClothingMaterial);
-                innerRightLowerLeg.position.set(0.09, -0.58, 0);
-                innerHumanGroup.add(innerRightLowerLeg);
-                
-                // Feet
-                const innerFootGeometry = new THREE.SphereGeometry(0.055, 16, 16);
-                innerFootGeometry.scale(1.5, 0.5, 1);
-                
-                // Left foot
-                const innerLeftFoot = new THREE.Mesh(innerFootGeometry, innerSkinMaterial);
-                innerLeftFoot.position.set(-0.09, -0.75, 0.05);
-                innerHumanGroup.add(innerLeftFoot);
-                
-                // Right foot
-                const innerRightFoot = new THREE.Mesh(innerFootGeometry, innerSkinMaterial);
-                innerRightFoot.position.set(0.09, -0.75, 0.05);
-                innerHumanGroup.add(innerRightFoot);
-                
-                // Add complete inner human to main group
-                hyperhumanGroup.add(innerHumanGroup);
-                
-                // Create outer human figure (4D projection) - more complex with tesseract-like properties
-                const outerHumanGroup = new THREE.Group();
-                
-                // Position the outer human with w-axis offset (representing 4D)
-                outerHumanGroup.position.set(0.15, 0.15, 0.15);
-                
-                // Head group with 4D properties
-                const outerHeadGroup = new THREE.Group();
-                
-                // Head base
-                const outerHeadGeometry = new THREE.SphereGeometry(0.22, 32, 32);
-                const outerHead = new THREE.Mesh(outerHeadGeometry, outerSkinMaterial);
-                outerHeadGroup.add(outerHead);
-                
-                // Hair
-                const outerHairGeometry = new THREE.SphereGeometry(0.23, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
-                const outerHair = new THREE.Mesh(outerHairGeometry, outerHairMaterial);
-                outerHair.position.y = 0.04;
-                outerHeadGroup.add(outerHair);
-                
-                // Add 4D visualizers to head (ring structures representing higher dimensional rotation)
-                const headRing1Geometry = new THREE.TorusGeometry(0.24, 0.01, 16, 32);
-                const headRing1 = new THREE.Mesh(headRing1Geometry, dimensionLineMaterial);
-                headRing1.rotation.x = Math.PI / 3;
-                outerHeadGroup.add(headRing1);
-                
-                const headRing2Geometry = new THREE.TorusGeometry(0.24, 0.01, 16, 32);
-                const headRing2 = new THREE.Mesh(headRing2Geometry, dimensionLineMaterial);
-                headRing2.rotation.y = Math.PI / 3;
-                outerHeadGroup.add(headRing2);
-                
-                // Position head group
-                outerHeadGroup.position.y = 0.7;
-                outerHumanGroup.add(outerHeadGroup);
-                
-                // Neck
-                const outerNeckGeometry = new THREE.CylinderGeometry(0.07, 0.08, 0.12, 16);
-                const outerNeck = new THREE.Mesh(outerNeckGeometry, outerSkinMaterial);
-                outerNeck.position.y = 0.52;
-                outerHumanGroup.add(outerNeck);
-                
-                // Torso
-                const outerTorsoGeometry = new THREE.CylinderGeometry(0.19, 0.16, 0.45, 20);
-                const outerTorso = new THREE.Mesh(outerTorsoGeometry, outerClothingMaterial);
-                outerTorso.position.y = 0.2;
-                
-                // Add 4D visualizers to torso (crossing rings)
-                const torsoRing1Geometry = new THREE.TorusGeometry(0.25, 0.01, 16, 32);
-                const torsoRing1 = new THREE.Mesh(torsoRing1Geometry, dimensionLineMaterial);
-                torsoRing1.rotation.x = Math.PI / 2;
-                torsoRing1.position.y = 0.2;
-                outerHumanGroup.add(torsoRing1);
-                
-                outerHumanGroup.add(outerTorso);
-                
-                // Arms and legs - similar to inner but larger and with 4D elements
-                // Shoulders
-                const outerShoulderGeometry = new THREE.SphereGeometry(0.08, 16, 16);
-                
-                // Left shoulder
-                const outerLeftShoulder = new THREE.Mesh(outerShoulderGeometry, outerClothingMaterial);
-                outerLeftShoulder.position.set(-0.2, 0.4, 0);
-                outerHumanGroup.add(outerLeftShoulder);
-                
-                // Right shoulder
-                const outerRightShoulder = new THREE.Mesh(outerShoulderGeometry, outerClothingMaterial);
-                outerRightShoulder.position.set(0.2, 0.4, 0);
-                outerHumanGroup.add(outerRightShoulder);
-                
-                // Upper arms
-                const outerUpperArmGeometry = new THREE.CylinderGeometry(0.06, 0.055, 0.25, 16);
-                
-                // Left upper arm
-                const outerLeftUpperArm = new THREE.Mesh(outerUpperArmGeometry, outerClothingMaterial);
-                outerLeftUpperArm.position.set(-0.32, 0.3, 0);
-                outerLeftUpperArm.rotation.z = Math.PI / 4;
-                outerHumanGroup.add(outerLeftUpperArm);
-                
-                // Right upper arm
-                const outerRightUpperArm = new THREE.Mesh(outerUpperArmGeometry, outerClothingMaterial);
-                outerRightUpperArm.position.set(0.32, 0.3, 0);
-                outerRightUpperArm.rotation.z = -Math.PI / 4;
-                outerHumanGroup.add(outerRightUpperArm);
-                
-                // Lower arms
-                const outerLowerArmGeometry = new THREE.CylinderGeometry(0.055, 0.05, 0.28, 16);
-                
-                // Left lower arm
-                const outerLeftLowerArm = new THREE.Mesh(outerLowerArmGeometry, outerSkinMaterial);
-                outerLeftLowerArm.position.set(-0.5, 0.1, 0);
-                outerLeftLowerArm.rotation.z = Math.PI / 5;
-                outerHumanGroup.add(outerLeftLowerArm);
-                
-                // Right lower arm
-                const outerRightLowerArm = new THREE.Mesh(outerLowerArmGeometry, outerSkinMaterial);
-                outerRightLowerArm.position.set(0.5, 0.1, 0);
-                outerRightLowerArm.rotation.z = -Math.PI / 5;
-                outerHumanGroup.add(outerRightLowerArm);
-                
-                // Hands
-                const outerHandGeometry = new THREE.SphereGeometry(0.06, 16, 16);
-                outerHandGeometry.scale(1.1, 0.7, 0.6);
-                
-                // Left hand
-                const outerLeftHand = new THREE.Mesh(outerHandGeometry, outerSkinMaterial);
-                outerLeftHand.position.set(-0.65, -0.02, 0);
-                outerLeftHand.rotation.z = Math.PI / 8;
-                outerHumanGroup.add(outerLeftHand);
-                
-                // Right hand
-                const outerRightHand = new THREE.Mesh(outerHandGeometry, outerSkinMaterial);
-                outerRightHand.position.set(0.65, -0.02, 0);
-                outerRightHand.rotation.z = -Math.PI / 8;
-                outerHumanGroup.add(outerRightHand);
-                
-                // Hip section
-                const outerHipGeometry = new THREE.CylinderGeometry(0.16, 0.18, 0.15, 20);
-                const outerHip = new THREE.Mesh(outerHipGeometry, outerClothingMaterial);
-                outerHip.position.y = -0.15;
-                outerHumanGroup.add(outerHip);
+                // ===== SIMPLIFIED: Create a very basic 4D human representation =====
+                // Base human figure
+                const humanFigure = new THREE.Group();
+                
+                // Head
+                const humanHead = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.5, 24, 24),
+                    humanMaterial
+                );
+                humanHead.position.y = 1.5;
+                humanFigure.add(humanHead);
+                
+                // Body
+                const humanBody = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.3, 0.3, 1.5, 16),
+                    humanMaterial
+                );
+                humanBody.position.y = 0.2;
+                humanFigure.add(humanBody);
+                
+                // Arms
+                const humanArms = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.15, 0.15, 2, 16),
+                    humanMaterial
+                );
+                humanArms.position.y = 0.7;
+                humanArms.rotation.z = Math.PI/2; // Rotate to horizontal
+                humanFigure.add(humanArms);
+                
+                // Arms
+                const shoulderY = 0.85;
+                const shoulderWidth = 0.6;
+                
+                // Left arm (two parts)
+                const leftUpperArm = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.08, 0.07, 0.4, 12),
+                    humanMaterial
+                );
+                leftUpperArm.position.set(-shoulderWidth/2, shoulderY, 0);
+                leftUpperArm.rotation.z = -Math.PI/6;
+                humanFigure.add(leftUpperArm);
+                
+                const leftLowerArm = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.07, 0.06, 0.4, 12),
+                    humanMaterial
+                );
+                leftLowerArm.position.set(-shoulderWidth/2 - 0.25, shoulderY - 0.3, 0);
+                leftLowerArm.rotation.z = -Math.PI/3;
+                humanFigure.add(leftLowerArm);
+                
+                // Right arm (two parts)
+                const rightUpperArm = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.08, 0.07, 0.4, 12),
+                    humanMaterial
+                );
+                rightUpperArm.position.set(shoulderWidth/2, shoulderY, 0);
+                rightUpperArm.rotation.z = Math.PI/6;
+                humanFigure.add(rightUpperArm);
+                
+                const rightLowerArm = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.07, 0.06, 0.4, 12),
+                    humanMaterial
+                );
+                rightLowerArm.position.set(shoulderWidth/2 + 0.25, shoulderY - 0.3, 0);
+                rightLowerArm.rotation.z = Math.PI/3;
+                humanFigure.add(rightLowerArm);
                 
                 // Legs
-                const outerUpperLegGeometry = new THREE.CylinderGeometry(0.09, 0.08, 0.35, 16);
+                const hipY = 0;
+                const hipWidth = 0.25;
                 
-                // Left upper leg
-                const outerLeftUpperLeg = new THREE.Mesh(outerUpperLegGeometry, outerClothingMaterial);
-                outerLeftUpperLeg.position.set(-0.1, -0.35, 0);
-                outerHumanGroup.add(outerLeftUpperLeg);
+                // Left leg (two parts)
+                const leftThigh = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.12, 0.1, 0.6, 12),
+                    humanMaterial
+                );
+                leftThigh.position.set(-hipWidth, hipY - 0.3, 0);
+                humanFigure.add(leftThigh);
                 
-                // Right upper leg
-                const outerRightUpperLeg = new THREE.Mesh(outerUpperLegGeometry, outerClothingMaterial);
-                outerRightUpperLeg.position.set(0.1, -0.35, 0);
-                outerHumanGroup.add(outerRightUpperLeg);
+                const leftCalf = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.1, 0.08, 0.6, 12),
+                    humanMaterial
+                );
+                leftCalf.position.set(-hipWidth, hipY - 0.9, 0);
+                humanFigure.add(leftCalf);
                 
-                // Lower legs
-                const outerLowerLegGeometry = new THREE.CylinderGeometry(0.08, 0.07, 0.35, 16);
+                // Right leg (two parts)
+                const rightThigh = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.12, 0.1, 0.6, 12),
+                    humanMaterial
+                );
+                rightThigh.position.set(hipWidth, hipY - 0.3, 0);
+                humanFigure.add(rightThigh);
                 
-                // Left lower leg
-                const outerLeftLowerLeg = new THREE.Mesh(outerLowerLegGeometry, outerClothingMaterial);
-                outerLeftLowerLeg.position.set(-0.12, -0.7, 0);
-                outerHumanGroup.add(outerLeftLowerLeg);
+                const rightCalf = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.1, 0.08, 0.6, 12),
+                    humanMaterial
+                );
+                rightCalf.position.set(hipWidth, hipY - 0.9, 0);
+                humanFigure.add(rightCalf);
                 
-                // Right lower leg
-                const outerRightLowerLeg = new THREE.Mesh(outerLowerLegGeometry, outerClothingMaterial);
-                outerRightLowerLeg.position.set(0.12, -0.7, 0);
-                outerHumanGroup.add(outerRightLowerLeg);
+                // Add the central human figure to the group
+                hyperhumanGroup.add(humanFigure);
                 
-                // Feet
-                const outerFootGeometry = new THREE.SphereGeometry(0.07, 16, 16);
-                outerFootGeometry.scale(1.5, 0.5, 1);
+                // ===== Create 4D tesseract structure =====
                 
-                // Left foot
-                const outerLeftFoot = new THREE.Mesh(outerFootGeometry, outerSkinMaterial);
-                outerLeftFoot.position.set(-0.12, -0.9, 0.06);
-                outerHumanGroup.add(outerLeftFoot);
+                // Inner cube
+                const innerCubeGeometry = new THREE.BoxGeometry(1.2, 2.4, 0.8);
+                const innerCube = new THREE.Mesh(innerCubeGeometry, hyperTesseractMaterial);
+                innerCube.position.y = 0.2;
+                hyperhumanGroup.add(innerCube);
                 
-                // Right foot
-                const outerRightFoot = new THREE.Mesh(outerFootGeometry, outerSkinMaterial);
-                outerRightFoot.position.set(0.12, -0.9, 0.06);
-                outerHumanGroup.add(outerRightFoot);
+                // Outer cube (larger, representing the 4D projection)
+                const outerCubeGeometry = new THREE.BoxGeometry(2, 3.2, 1.4);
+                const outerCube = new THREE.Mesh(outerCubeGeometry, hyperTesseractMaterial);
+                // Offset the outer cube slightly to show 4D perspective
+                outerCube.position.set(0.3, 0.3, 0.3);
+                hyperhumanGroup.add(outerCube);
                 
-                // Add outer human to main group
-                hyperhumanGroup.add(outerHumanGroup);
+                // ===== Create 4D time slices (showing human in multiple time states) =====
                 
-                // Create dimensional connections - these represent the connections between 3D and 4D space
-                const keyConnectionPoints = [
-                    // Head connections
-                    [[0, 0.5, 0], [0.15, 0.7, 0.15]],
-                    // Neck
-                    [[0, 0.37, 0], [0.15, 0.52, 0.15]],
-                    // Shoulders
-                    [[-0.15, 0.3, 0], [-0.05, 0.4, 0.15]],
-                    [[0.15, 0.3, 0], [0.35, 0.4, 0.15]],
-                    // Elbows
-                    [[-0.33, 0.14, 0], [-0.18, 0.3, 0.15]],
-                    [[0.33, 0.14, 0], [0.48, 0.3, 0.15]],
-                    // Hands
-                    [[-0.53, 0, 0], [-0.5, 0.13, 0.15]],
-                    [[0.53, 0, 0], [0.8, 0.13, 0.15]],
-                    // Torso - multiple points
-                    [[0, 0.2, 0], [0.15, 0.35, 0.15]],
-                    [[0, 0, 0], [0.15, 0.15, 0.15]],
-                    // Hips
-                    [[-0.07, -0.1, 0], [0.05, -0.05, 0.15]],
-                    [[0.07, -0.1, 0], [0.25, -0.05, 0.15]],
-                    // Knees
-                    [[-0.08, -0.42, 0], [0.05, -0.35, 0.15]],
-                    [[0.08, -0.42, 0], [0.25, -0.35, 0.15]],
-                    // Feet
-                    [[-0.09, -0.75, 0], [0.03, -0.9, 0.15]],
-                    [[0.09, -0.75, 0], [0.27, -0.9, 0.15]]
+                // Time slice positions (create 1 additional "echo" position of the human)
+                const timeSlicePositions = [
+                    { pos: new THREE.Vector3(0.5, 0.1, 0.5), scale: 1.0, rotation: 0.2 }
                 ];
                 
-                // Create all dimension connection lines with pulsing effect
-                keyConnectionPoints.forEach((points, index) => {
-                    const lineGeometry = new THREE.BufferGeometry();
-                    const lineVertices = new Float32Array([
-                        ...points[0], // Inner point (3D)
-                        ...points[1]  // Outer point (4D)
-                    ]);
-                    lineGeometry.setAttribute('position', new THREE.BufferAttribute(lineVertices, 3));
-                    
-                    // Use different colors for alternate connections to create a dimensional field effect
-                    const connectionMaterial = new THREE.LineBasicMaterial({
-                        color: index % 2 === 0 ? 0xaaccff : 0x88aaff, 
-                        transparent: true,
-                        opacity: 0.7,
-                        linewidth: 2
-                    });
-                    
-                    const line = new THREE.Line(lineGeometry, connectionMaterial);
-                    hyperhumanGroup.add(line);
+                // Material for time slices (replacing the undefined projectionMaterial)
+                const projectionMaterial = new THREE.MeshBasicMaterial({
+                    color: app.selectedColor,
+                    transparent: true,
+                    opacity: 0.4,
+                    wireframe: true
                 });
                 
-                // TIME DIMENSION VISUALIZATION
-                // Create a complex representation of movement through 4D spacetime
-                const timeTrailGroup = new THREE.Group();
+                // Material for time dimension lines
+                const timeLineMaterial = new THREE.LineBasicMaterial({ 
+                    color: 0x00ffff,
+                    linewidth: 2
+                });
                 
-                // Create "time slices" of the human at different points in 4D spacetime
-                const timePositions = [
-                    { x: 0.3, y: 0, z: 0.3, scale: 0.8, opacity: 0.5 },
-                    { x: 0.6, y: 0.05, z: 0.6, scale: 0.6, opacity: 0.3 },
-                    { x: 0.9, y: 0.15, z: 0.9, scale: 0.4, opacity: 0.2 }
-                ];
-                
-                // Create each time slice
-                timePositions.forEach(pos => {
-                    const timeSliceMaterial = new THREE.MeshBasicMaterial({
-                        color: app.selectedColor,
-                        wireframe: true,
-                        transparent: true,
-                        opacity: pos.opacity
-                    });
-                    
-                    // Create simplified human representation for time slices
+                // Create time slices
+                timeSlicePositions.forEach(slice => {
+                    // Create simplified human for each time slice
                     const timeSlice = new THREE.Group();
                     
-                    // Head
-                    const timeHeadGeometry = new THREE.SphereGeometry(0.2 * pos.scale, 12, 12);
-                    const timeHead = new THREE.Mesh(timeHeadGeometry, timeSliceMaterial);
-                    timeHead.position.y = 0.6 * pos.scale;
+                    // Time slice head
+                    const timeHead = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.35 * slice.scale, 16, 16),
+                        projectionMaterial
+                    );
+                    timeHead.position.y = 1.2 * slice.scale;
                     timeSlice.add(timeHead);
                     
-                    // Body
-                    const timeBodyGeometry = new THREE.CylinderGeometry(
-                        0.15 * pos.scale, 0.12 * pos.scale, 0.6 * pos.scale, 12
+                    // Time slice body
+                    const timeBody = new THREE.Mesh(
+                        new THREE.CylinderGeometry(
+                            0.25 * slice.scale,
+                            0.2 * slice.scale,
+                            1.0 * slice.scale,
+                            12
+                        ),
+                        projectionMaterial
                     );
-                    const timeBody = new THREE.Mesh(timeBodyGeometry, timeSliceMaterial);
-                    timeBody.position.y = 0.2 * pos.scale;
+                    timeBody.position.y = 0.5 * slice.scale;
                     timeSlice.add(timeBody);
                     
-                    // Arms
-                    const timeArmsGeometry = new THREE.BoxGeometry(
-                        0.6 * pos.scale, 0.1 * pos.scale, 0.1 * pos.scale
+                    // Time slice arms
+                    const timeArms = new THREE.Mesh(
+                        new THREE.BoxGeometry(
+                            1.2 * slice.scale,
+                            0.15 * slice.scale,
+                            0.15 * slice.scale
+                        ),
+                        projectionMaterial
                     );
-                    const timeArms = new THREE.Mesh(timeArmsGeometry, timeSliceMaterial);
-                    timeArms.position.y = 0.35 * pos.scale;
+                    timeArms.position.y = 0.8 * slice.scale;
                     timeSlice.add(timeArms);
                     
-                    // Legs
-                    const timeLegsGeometry = new THREE.CylinderGeometry(
-                        0.1 * pos.scale, 0.08 * pos.scale, 0.6 * pos.scale, 12
+                    // Time slice legs
+                    const timeLegs = new THREE.Mesh(
+                        new THREE.BoxGeometry(
+                            0.5 * slice.scale,
+                            1.0 * slice.scale,
+                            0.15 * slice.scale
+                        ),
+                        projectionMaterial
                     );
+                    timeLegs.position.y = -0.2 * slice.scale;
+                    timeSlice.add(timeLegs);
                     
-                    // Left leg
-                    const timeLeftLeg = new THREE.Mesh(timeLegsGeometry, timeSliceMaterial);
-                    timeLeftLeg.position.set(-0.1 * pos.scale, -0.2 * pos.scale, 0);
-                    timeSlice.add(timeLeftLeg);
+                    // Position and rotate the time slice
+                    timeSlice.position.copy(slice.pos);
+                    timeSlice.rotation.y = slice.rotation;
                     
-                    // Right leg
-                    const timeRightLeg = new THREE.Mesh(timeLegsGeometry, timeSliceMaterial);
-                    timeRightLeg.position.set(0.1 * pos.scale, -0.2 * pos.scale, 0);
-                    timeSlice.add(timeRightLeg);
+                    // Add to main group
+                    hyperhumanGroup.add(timeSlice);
                     
-                    // Position the time slice
-                    timeSlice.position.set(pos.x, pos.y, pos.z);
-                    timeTrailGroup.add(timeSlice);
-                    
-                    // Add time trails (temporal connections)
-                    const timeConnectionGeometry = new THREE.BufferGeometry();
-                    const connectionPoints = [];
-                    
-                    // Connect key points between inner figure and time slice
-                    // Head
-                    connectionPoints.push(
-                        0, 0.5, 0,                          // Inner head
-                        pos.x, 0.6 * pos.scale + pos.y, pos.z  // Time slice head
-                    );
-                    
-                    // Torso center
-                    connectionPoints.push(
-                        0, 0.2, 0,                          // Inner torso
-                        pos.x, 0.2 * pos.scale + pos.y, pos.z  // Time slice torso
-                    );
-                    
-                    // Create time connection lines
-                    const timeConnectionVertices = new Float32Array(connectionPoints);
-                    timeConnectionGeometry.setAttribute('position', 
-                        new THREE.BufferAttribute(timeConnectionVertices, 3)
-                    );
-                    
-                    const timeConnection = new THREE.LineSegments(
-                        timeConnectionGeometry, 
-                        timeLineMaterial
-                    );
-                    timeTrailGroup.add(timeConnection);
-                });
-                
-                // Add time dimension to the main group
-                hyperhumanGroup.add(timeTrailGroup);
-                
-                // Create 4D projection effect - tesseract-like boundary
-                const tesseractGeometry = new THREE.BoxGeometry(1.8, 2.2, 0.8);
-                const tesseractMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x4488ff,
-                    wireframe: true,
-                    transparent: true,
-                    opacity: 0.15
-                });
-                const tesseractBoundary = new THREE.Mesh(tesseractGeometry, tesseractMaterial);
-                tesseractBoundary.position.set(0.1, -0.1, 0.1);
-                hyperhumanGroup.add(tesseractBoundary);
-                
-                // Create inner tesseract
-                const innerTesseractGeometry = new THREE.BoxGeometry(1.2, 1.6, 0.6);
-                const innerTesseractMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x88ccff,
-                    wireframe: true,
-                    transparent: true,
-                    opacity: 0.15
-                });
-                const innerTesseractBoundary = new THREE.Mesh(innerTesseractGeometry, innerTesseractMaterial);
-                hyperhumanGroup.add(innerTesseractBoundary);
-                
-                // Connect tesseract corners - representing 4D connections
-                const tesseractConnections = [];
-                const cornerOffsets = [
-                    [-0.6, -0.8, -0.3], [0.6, -0.8, -0.3],
-                    [-0.6, 0.8, -0.3], [0.6, 0.8, -0.3],
-                    [-0.6, -0.8, 0.3], [0.6, -0.8, 0.3],
-                    [-0.6, 0.8, 0.3], [0.6, 0.8, 0.3]
-                ];
-                
-                // Connect corresponding corners
-                for (let i = 0; i < 8; i++) {
-                    const inner = cornerOffsets[i];
-                    const outer = [
-                        inner[0] * 1.5 + 0.1,
-                        inner[1] * 1.375 - 0.1,
-                        inner[2] * 1.33 + 0.1
+                    // Create temporal connection lines
+                    const temporalConnections = [
+                        // Connect head
+                        [0, 1.2, 0, slice.pos.x, 1.2 * slice.scale + slice.pos.y, slice.pos.z],
+                        // Connect center of mass
+                        [0, 0.5, 0, slice.pos.x, 0.5 * slice.scale + slice.pos.y, slice.pos.z]
                     ];
                     
-                    tesseractConnections.push(
-                        inner[0], inner[1], inner[2],
-                        outer[0], outer[1], outer[2]
-                    );
+                    temporalConnections.forEach(points => {
+                        const lineGeometry = new THREE.BufferGeometry();
+                        const vertices = new Float32Array(points);
+                        lineGeometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+                        const timeLine = new THREE.Line(lineGeometry, timeLineMaterial);
+                        hyperhumanGroup.add(timeLine);
+                    });
+                });
+                
+                // ===== Connect corners of inner and outer cubes =====
+                
+                // Add dimension lines
+                const dimensionLineMaterial = new THREE.LineBasicMaterial({ 
+                    color: 0xffffff,
+                    linewidth: 2
+                });
+                
+                // Define the 8 corners of a cube
+                const innerCorners = [
+                    [-0.6, 1.4, 0.4], [0.6, 1.4, 0.4], [-0.6, -1.0, 0.4], [0.6, -1.0, 0.4],
+                    [-0.6, 1.4, -0.4], [0.6, 1.4, -0.4], [-0.6, -1.0, -0.4], [0.6, -1.0, -0.4]
+                ];
+                
+                const outerCorners = [
+                    [-0.7 + 0.3, 1.9 + 0.3, 0.7 + 0.3], [1.3 + 0.3, 1.9 + 0.3, 0.7 + 0.3],
+                    [-0.7 + 0.3, -1.3 + 0.3, 0.7 + 0.3], [1.3 + 0.3, -1.3 + 0.3, 0.7 + 0.3],
+                    [-0.7 + 0.3, 1.9 + 0.3, -0.7 + 0.3], [1.3 + 0.3, 1.9 + 0.3, -0.7 + 0.3],
+                    [-0.7 + 0.3, -1.3 + 0.3, -0.7 + 0.3], [1.3 + 0.3, -1.3 + 0.3, -0.7 + 0.3]
+                ];
+                
+                // Create lines between corresponding corners
+                for (let i = 0; i < 8; i++) {
+                    const lineGeometry = new THREE.BufferGeometry();
+                    const vertices = new Float32Array([
+                        ...innerCorners[i],
+                        ...outerCorners[i]
+                    ]);
+                    lineGeometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+                    const cornerLine = new THREE.Line(lineGeometry, dimensionLineMaterial);
+                    hyperhumanGroup.add(cornerLine);
                 }
                 
-                // Create the tesseract connection lines
-                const tesseractConnectionGeometry = new THREE.BufferGeometry();
-                tesseractConnectionGeometry.setAttribute('position', 
-                    new THREE.BufferAttribute(new Float32Array(tesseractConnections), 3)
+                // Add a few special 4D visualization elements
+                
+                // Visualization of the 4D axis (w-axis)
+                const wAxisGeometry = new THREE.BufferGeometry();
+                const wAxisVertices = new Float32Array([
+                    0, 0, 0,  // Origin
+                    1.5, 1.5, 1.5  // 4D direction
+                ]);
+                wAxisGeometry.setAttribute('position', new THREE.BufferAttribute(wAxisVertices, 3));
+                const wAxis = new THREE.Line(wAxisGeometry, new THREE.LineBasicMaterial({ 
+                    color: 0x00ffff,
+                    linewidth: 3 
+                }));
+                hyperhumanGroup.add(wAxis);
+                
+                // Create a visible marker at the 4D projection point
+                const wMarker = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.2, 16, 16),
+                    new THREE.MeshBasicMaterial({ 
+                        color: 0x00ffff,
+                        transparent: true,
+                        opacity: 0.7
+                    })
                 );
+                wMarker.position.set(1.5, 1.5, 1.5);
+                hyperhumanGroup.add(wMarker);
                 
-                const tesseractConnectionMaterial = new THREE.LineBasicMaterial({
-                    color: 0x4488ff,
-                    transparent: true,
-                    opacity: 0.2
-                });
+                // Create 4D visualization elements - create a visible echo/shadow effect
                 
-                const tesseractConnectionLines = new THREE.LineSegments(
-                    tesseractConnectionGeometry, 
-                    tesseractConnectionMaterial
-                );
-                hyperhumanGroup.add(tesseractConnectionLines);
-                
-                // Scale the entire human figure appropriately
-                hyperhumanGroup.scale.set(0.8, 0.8, 0.8);
-                
-                // Position the figure to be fully visible in camera view
-                hyperhumanGroup.position.set(0, 0, 0);
-                
-                // Ensure higher opacity for better visibility
-                hyperhumanGroup.traverse((child) => {
-                    if (child.material && child.material.transparent) {
-                        // Increase opacity for better visibility while maintaining transparency
-                        if (child.material.opacity < 0.3) {
-                            child.material.opacity = Math.min(child.material.opacity * 2, 0.6);
-                        }
+                // Create 4D "shadow" humans (copies with offset) - only create 2 shadows for a total of 3 humans
+                for (let i = 0; i < 2; i++) {
+                    const shadowScale = 1.0; // Same size
+                    const shadowOpacity = 0.9 - (i * 0.3); // Decreasing opacity
+                    const distanceFactor = i + 1;
+                    
+                    // Create shadow material
+                    const shadowMaterial = new THREE.MeshBasicMaterial({
+                        color: app.selectedColor,
+                        transparent: true,
+                        opacity: shadowOpacity,
+                        wireframe: i > 0 // Make all but the first shadow wireframe
+                    });
+                    
+                    // Create a shadow human group
+                    const shadowHuman = new THREE.Group();
+                    
+                    // Shadow head
+                    const shadowHead = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.5 * shadowScale, 16, 16),
+                        shadowMaterial
+                    );
+                    shadowHead.position.y = 1.5 * shadowScale;
+                    shadowHuman.add(shadowHead);
+                    
+                    // Shadow body
+                    const shadowBody = new THREE.Mesh(
+                        new THREE.CylinderGeometry(
+                            0.3 * shadowScale, 
+                            0.3 * shadowScale, 
+                            1.5 * shadowScale, 
+                            16
+                        ),
+                        shadowMaterial
+                    );
+                    shadowBody.position.y = 0.2 * shadowScale;
+                    shadowHuman.add(shadowBody);
+                    
+                    // Shadow arms
+                    const shadowArms = new THREE.Mesh(
+                        new THREE.CylinderGeometry(
+                            0.15 * shadowScale, 
+                            0.15 * shadowScale, 
+                            2 * shadowScale, 
+                            16
+                        ),
+                        shadowMaterial
+                    );
+                    shadowArms.position.y = 0.7 * shadowScale;
+                    shadowArms.rotation.z = Math.PI/2; // Rotate to horizontal
+                    shadowHuman.add(shadowArms);
+                    
+                    // Shadow legs
+                    const shadowLeftLeg = new THREE.Mesh(
+                        new THREE.CylinderGeometry(
+                            0.15 * shadowScale, 
+                            0.15 * shadowScale, 
+                            1.8 * shadowScale, 
+                            16
+                        ),
+                        shadowMaterial
+                    );
+                    shadowLeftLeg.position.set(-0.3 * shadowScale, -1 * shadowScale, 0);
+                    shadowHuman.add(shadowLeftLeg);
+                    
+                    const shadowRightLeg = new THREE.Mesh(
+                        new THREE.CylinderGeometry(
+                            0.15 * shadowScale, 
+                            0.15 * shadowScale, 
+                            1.8 * shadowScale, 
+                            16
+                        ),
+                        shadowMaterial
+                    );
+                    shadowRightLeg.position.set(0.3 * shadowScale, -1 * shadowScale, 0);
+                    shadowHuman.add(shadowRightLeg);
+                    
+                    // Position the shadow with progressive offset (representing 4D)
+                    shadowHuman.position.set(
+                        0.3 * distanceFactor,
+                        0.3 * distanceFactor,
+                        0.3 * distanceFactor
+                    );
+                    
+                    // Add the shadow human to the main group
+                    hyperhumanGroup.add(shadowHuman);
+                    
+                    // Connect main human to shadow with lines
+                    if (i === 0) {
+                        // Create connecting lines between main human and first shadow
+                        const connectPoints = [
+                            // Head connection
+                            [0, 1.5, 0, 0.3, 1.5 * shadowScale + 0.3, 0.3],
+                            
+                            // Body center connection
+                            [0, 0.5, 0, 0.3, 0.5 * shadowScale + 0.3, 0.3],
+                            
+                            // Left arm connection
+                            [-1, 0.7, 0, -0.7, 0.7 * shadowScale + 0.3, 0.3],
+                            
+                            // Right arm connection
+                            [1, 0.7, 0, 1.3, 0.7 * shadowScale + 0.3, 0.3],
+                            
+                            // Left leg connection
+                            [-0.3, -1, 0, 0, -1 * shadowScale + 0.3, 0.3],
+                            
+                            // Right leg connection
+                            [0.3, -1, 0, 0.6, -1 * shadowScale + 0.3, 0.3]
+                        ];
+                        
+                        // Create all connections
+                        connectPoints.forEach((points) => {
+                            const lineGeometry = new THREE.BufferGeometry();
+                            const vertices = new Float32Array(points);
+                            lineGeometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+                            
+                            const connectionLine = new THREE.Line(
+                                lineGeometry,
+                                new THREE.LineBasicMaterial({
+                                    color: app.selectedColor,
+                                    transparent: true,
+                                    opacity: 0.5
+                                })
+                            );
+                            
+                            hyperhumanGroup.add(connectionLine);
+                        });
                     }
-                });
+                }
+                
+                // Create tesseract boundary to represent 4D space
+                const outerTesseract = new THREE.Mesh(
+                    new THREE.BoxGeometry(4, 4, 4),
+                    new THREE.MeshBasicMaterial({
+                        color: 0x4488ff,
+                        wireframe: true,
+                        transparent: true,
+                        opacity: 0.3
+                    })
+                );
+                hyperhumanGroup.add(outerTesseract);
+                
+                // Log message to verify function is executing
+                console.log("Creating hyperhuman - visibility fix");
+                
+                // Add tesseract frame for 4D context - make it larger for better visibility
+                const tesseract = new THREE.Mesh(
+                    new THREE.BoxGeometry(3.0, 3.0, 3.0),
+                    hyperTesseractMaterial
+                );
+                hyperhumanGroup.add(tesseract);
                 
                 return hyperhumanGroup;
             }
@@ -3664,18 +3465,54 @@
             // Update object colors
             function updateObjectColors() {
                 // Update 1D object
-                if (app.objects['1d'] && app.objects['1d'].material) {
-                    app.objects['1d'].material.color.set(app.selectedColor);
+                if (app.objects['1d']) {
+                    if (app.objects['1d'].material) {
+                        app.objects['1d'].material.color.set(app.selectedColor);
+                    }
+                    // For complex objects with multiple parts
+                    app.objects['1d'].traverse((child) => {
+                        if (child.material) {
+                            if (Array.isArray(child.material)) {
+                                child.material.forEach(mat => mat.color.set(app.selectedColor));
+                            } else {
+                                child.material.color.set(app.selectedColor);
+                            }
+                        }
+                    });
                 }
                 
                 // Update 2D object
-                if (app.objects['2d'] && app.objects['2d'].material) {
-                    app.objects['2d'].material.color.set(app.selectedColor);
+                if (app.objects['2d']) {
+                    if (app.objects['2d'].material) {
+                        app.objects['2d'].material.color.set(app.selectedColor);
+                    }
+                    // For complex objects with multiple parts
+                    app.objects['2d'].traverse((child) => {
+                        if (child.material) {
+                            if (Array.isArray(child.material)) {
+                                child.material.forEach(mat => mat.color.set(app.selectedColor));
+                            } else {
+                                child.material.color.set(app.selectedColor);
+                            }
+                        }
+                    });
                 }
                 
                 // Update 3D object
-                if (app.objects['3d'] && app.objects['3d'].material) {
-                    app.objects['3d'].material.color.set(app.selectedColor);
+                if (app.objects['3d']) {
+                    if (app.objects['3d'].material) {
+                        app.objects['3d'].material.color.set(app.selectedColor);
+                    }
+                    // For complex objects with multiple parts
+                    app.objects['3d'].traverse((child) => {
+                        if (child.material) {
+                            if (Array.isArray(child.material)) {
+                                child.material.forEach(mat => mat.color.set(app.selectedColor));
+                            } else {
+                                child.material.color.set(app.selectedColor);
+                            }
+                        }
+                    });
                 }
                 
                 // Update 4D object

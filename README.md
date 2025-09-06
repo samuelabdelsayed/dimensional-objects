@@ -26,55 +26,19 @@ A web application that generates high-quality, rotating graphics of geometric ob
 Below are visualizations of how a cube appears in different dimensions:
 
 #### 1D Cube (Line Segment)
-```
-|--------------|
-```
+![1D Cube Representation](images/1d_cube.png)
 In one dimension, a cube is represented as a line segment with length equal to the cube's side.
 
 #### 2D Cube (Square)
-```
- __________
-|          |
-|          |
-|          |
-|          |
-|__________|
-```
+![2D Cube Representation](images/2d_cube.png)
 In two dimensions, a cube becomes a square - a 2D face of the 3D cube.
 
 #### 3D Cube
-```
-    +--------+
-   /|       /|
-  / |      / |
- +--------+  |
- |  |     |  |
- |  +-----|--+
- | /      | /
- |/       |/
- +--------+
-```
+![3D Cube Representation](images/3d_cube.png)
 In three dimensions, we see the familiar cube with six square faces.
 
 #### 4D Cube (Tesseract/Hypercube)
-```
-         +--------+
-        /|       /|
-       / |      / |
-      +--------+  |
-     /|  |    /|  |
-    / |  +---/-|--+
-   +--------+  | /|
-   |  |     |  |/ |
-   |  +-----|--+  |
-   | /      | /   |
-   |/       |/    |
-   +--------+     |
-    |        |    |
-    |        |    |
-    |        |    |
-    +--------+----+
-```
+![4D Cube Representation](images/4d_cube.png)
 In four dimensions, a tesseract is typically visualized as a cube within a cube, with corresponding vertices connected.
   
 - Interactive controls:
